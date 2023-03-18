@@ -127,12 +127,13 @@ public class FileService {
         if (path.equals("/")){
             path = rootPath;
         }
+        path+=File.separator;
         if (!file.isEmpty()){
             try {
                 byte[] bytes = file.getBytes();
                 String savePath = path+file.getOriginalFilename();
                 Files.write(Path.of(savePath),bytes);
-                logger.warning("文件储存地址为"+savePath);
+                logger.warning("File save in "+savePath);
                 return true;
             } catch (IOException e) {
                 throw new RuntimeException(e);
