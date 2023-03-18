@@ -1,1 +1,1 @@
-# A simple file manager
+# A simple web file manager
