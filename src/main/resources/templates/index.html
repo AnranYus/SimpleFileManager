@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    a:link {
+        color: blue;
+    }
+
+    a:visited {
+        color: blue;
+    }
+</style>
+<body>
+<div id="app">
+    <table>
+        <tr>
+            <td>Name</td>
+            <td>Size</td>
+            <td>LastChange</td>
+        </tr>
+        <tr>
+            <td>
+                <a href="#" @click="fetchList(parent)">
+                    <!--回退上一级-->
+                    ../
+                </a>
+            </td>
+
+        </tr>
+        <!--        遍历列表-->
+        <tr v-for="(item,index) in files" :key="index">
+            <td>
+                <div v-if="(item.isFile)">
+                    <a href="#" @click="download(item.path,item.name)">
+                        {{item.name}}
+                    </a>
+                </div>
+                <div v-if="!(item.isFile)">
+                    <a href="#" @click="fetchList(item.path)">
+                        {{item.name}}
+                    </a>
+                </div>
+
+            </td>
+            <td>{{item.size}}</td>
+            <td>{{item.changeDate}}</td>
+        </tr>
+    </table>
+
+</div>
+</body>
+<script>
+    const app = new Vue({
+        el:"#app",
+        data:{
+            files: [],
+            parent: ""
+        },
+        mounted:function (){
+            this.fetchList("/")
+        },
+        methods: {
+            fetchList(path) {
+                axios.get('/api/getFiles', {
+                    params: {
+                        path: path
+                    }
+                })
+                    .then(res => {
+                        this.files = res.data;
+                        console.log(res.data);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    })
+
+                //判断平台，选择不同的路径符号
+                const isWindows = navigator.platform.indexOf('Win') >= 0;
+                const pathSeparator = isWindows ? '\\' : '/';
+                //设置父路径
+                this.parent = path.substring(0, path.lastIndexOf(pathSeparator));
+                //在Windows平台回退根目录需要一个pathSeparator
+                if (isWindows){
+                    //如果是根目录,则直接追加pathSeparator
+                    if (this.parent.lastIndexOf(pathSeparator)===-1){
+                        this.parent+=pathSeparator;
+                    }
+                }
+            },
+            download(path,filename){
+                axios('/api/download',{
+                    params:{
+                        path:path
+                    },
+                    responseType:'blob'
+                }).then( res => {
+                    const blob = new Blob([res.data], { type: res.headers['content-type'] });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    link.click();
+                })
+            }
+        }
+
+    });
+</script>
+
+</html>
