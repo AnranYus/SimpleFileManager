@@ -64,7 +64,7 @@ public class FileController {
     @ResponseBody
     public String getParentPath(String nowPath){
         String parent =  new File(nowPath).getParent();
-        if (parent==null){
+        if (parent==null|| nowPath.equals(FileService.rootPath)){
             parent = FileService.rootPath;
         }
         return parent;
