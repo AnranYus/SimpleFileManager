@@ -1,68 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.js" integrity="sha256-a9jBBRygX1Bh5lt8GZjXDzyOB+bWve9EiO7tROUtj/E=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
 <style>
-    a:link {
-        color: blue;
-    }
-
-    a:visited {
-        color: blue;
+    .panel{
+        border-radius: 25px;
+        padding: 10px;
     }
 </style>
 <body>
 <div id="app">
-    <table>
-        <tr>
-            <td>Name</td>
-            <td>Size</td>
-            <td>LastChange</td>
-        </tr>
-        <tr>
-            <td>
-                <a href="#" @click="fetchList(parent)">
-                    <!--回退上一级-->
-                    ../
+    <nav>
+        <div class="nav-wrapper">
+            <a href="#!" class="brand-logo"><i class="material-icons" style="padding-left: 10px">cloud</i></a>
+            <ul class="right hide-on-med-and-down">
+                <a class="waves-effect waves-light btn #b71c1c red darken-4" @click="showDialog=!showDialog">
+                    <i class="material-icons">add</i>
                 </a>
-            </td>
+            </ul>
+        </div>
+    </nav>
 
-        </tr>
-        <!--        遍历列表-->
-        <tr v-for="(item,index) in files" :key="index">
-            <td>
-                <div v-if="(item.isFile)">
-                    <a href="#" @click="download(item.path,item.name)">
-                        {{item.name}}
-                    </a>
-                </div>
-                <div v-if="!(item.isFile)">
-                    <a href="#" @click="fetchList(item.path)">
-                        {{item.name}}
-                    </a>
-                </div>
+    <div class="modal" style="display: block" v-if="showDialog">
+        <div class="modal-content">
+            <input type="file" ref="fileInput" v-on:change="handleFileChange">
+            <p id="info">{{info}}</p>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-action waves-effect  btn-flat" @click="uploadFile()">UPLOAD</a>
+            <a href="#!" class="modal-action waves-effect  btn-flat" @click="showDialog=!showDialog">CANCEL</a>
+        </div>
+    </div>
 
-            </td>
-            <td>{{item.size}}</td>
-            <td>{{item.changeDate}}</td>
-        </tr>
-    </table>
+    <div class="section no-pad-bot" id="index-banner">
+        <div class="container">
+            <div class="col s12 m2 z-depth-5 panel">
+                <table class="highlight ">
+                    <!--                Title-->
+                    <tr>
+                        <td>Name</td>
+                        <td>Size</td>
+                        <td>LastChange</td>
+                        <td>Control</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="#" @click="fetchList(parent)" class="blue-text text-darken-2">
+                                <!--回退上一级-->
+                                ../
+                            </a>
+                        </td>
+                    </tr>
+                    <!--        遍历列表-->
+                    <tr v-for="(item,index) in files" :key="index">
+                        <td>
+                            <div v-if="(item.isFile)">
+                                <p @click="download(item.path,item.name)" class="blue-text text-darken-2" style="cursor: pointer;">
+                                    {{item.name}}
+                                </p>
+                            </div>
+                            <div v-if="!(item.isFile)">
+                                <p @click="fetchList(item.path)" class="blue-text text-darken-2" style="cursor: pointer;">
+                                    {{item.name}}
+                                </p>
+                            </div>
+                        </td>
+                        <td>
+                            <div v-if="(item.isFile)">
+                                {{item.size}}
+                            </div>
+                        </td>
+                        <td>{{item.changeDate}}</td>
+                        <td>
+                            <!--                        控制-->
+                            <a href="#" @click="deleteFile(item.path)">删除</a>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
 
 </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
 <script>
     const app = new Vue({
         el:"#app",
         data:{
             files: [],
-            parent: ""
+            parent: "",
+            nowPath:"",
+            showDialog:false,
+            resourcePath:"",
+            selectedFile:null,
+            info:""
         },
         mounted:function (){
             this.fetchList("/")
+
+            // let input = document.getElementById("myFile");
+            // input.addEventListener("change", function(event) {
+            //     this.uploadFile(event.target.value)
+            // });
         },
         methods: {
             fetchList(path) {
@@ -72,6 +123,7 @@
                     }
                 })
                     .then(res => {
+                        this.nowPath = path;
                         this.files = res.data;
                         console.log(res.data);
                     })
@@ -105,10 +157,59 @@
                     link.download = filename;
                     link.click();
                 })
+            },
+            deleteFile(path){
+                axios('/api/delete',{
+                    params:{
+                        path:path
+                    }
+                }).then( res => {
+                    if (res){
+                        alert("删除成功");
+                        this.fetchList(this.nowPath)
+                    }else {
+                        alert("删除失败，请检查日志");
+                    }
+                })
+            },
+            handleFileChange(event){
+                this.selectedFile = event.target.files[0];
+            },
+            uploadFile(){
+                if (this.selectedFile!=null){
+                    const formData = new FormData();
+                    formData.append('file', this.selectedFile);
+
+                    this.info = "Uploading....."
+
+                    axios.post('/api/upload', formData, {
+                        params:{
+                            path:this.nowPath
+                        },
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    }).then(res => {
+                        if (res){
+                            this.info = "OK!"
+                            this.fetchList(this.nowPath)
+                        }else {
+                            this.info = "ERROR!"
+                        }
+                    }).catch(error => {
+                        console.error(error);
+                    });
+                }else {
+                    this.info = "File is null."
+                }
+
             }
         }
 
     });
+
+
+
 </script>
 
 </html>

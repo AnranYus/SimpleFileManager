@@ -9,8 +9,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -29,7 +31,6 @@ public class FileController {
     @ResponseBody
     public String getFiles(String path,String type,String order){
         if (path!=null) {
-            logger.warning(path);
             return gson.toJson(fileService.getFiles(type, order, path));
         }else {
             return null;
@@ -45,6 +46,18 @@ public class FileController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
 
+    }
+
+    @GetMapping("/api/delete")
+    @ResponseBody
+    public Boolean delete(String path){
+        return  (fileService.deleteFile(path));
+    }
+
+    @PostMapping("/api/upload")
+    @ResponseBody
+    public Boolean upload(String path, MultipartFile file){
+        return fileService.saveFile(path,file);
     }
 
 }

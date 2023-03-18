@@ -5,8 +5,12 @@ import com.anranyus.filemanager.simplefilemanager.model.mFile;
 import com.anranyus.filemanager.simplefilemanager.utils.FileOrder;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -95,6 +99,42 @@ public class FileService {
             return list;
         }
 
+    }
+
+    public Boolean deleteFile(String path){
+        File file = new File(path);
+        if (file.exists()){
+            return file.delete();
+        }else {
+            return false;
+        }
+    }
+
+    /**
+     *
+     * @param path 要储存的文件路径
+     * @param file 储存的文件
+     * @return 储存成功与否
+     */
+
+    public Boolean saveFile(String path, MultipartFile file){
+        if (path.equals("/")){
+            path = rootPath;
+        }
+        if (!file.isEmpty()){
+            try {
+                byte[] bytes = file.getBytes();
+                String savePath = path+file.getOriginalFilename();
+                Files.write(Path.of(savePath),bytes);
+                logger.warning("文件储存地址为"+savePath);
+                return true;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }else {
+            return false;
+        }
     }
 
 
