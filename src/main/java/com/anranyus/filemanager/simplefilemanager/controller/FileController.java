@@ -10,10 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -58,6 +58,16 @@ public class FileController {
     @ResponseBody
     public Boolean upload(String path, MultipartFile file){
         return fileService.saveFile(path,file);
+    }
+
+    @GetMapping("/api/parent")
+    @ResponseBody
+    public String getParentPath(String nowPath){
+        String parent =  new File(nowPath).getParent();
+        if (parent==null){
+            parent = FileService.rootPath;
+        }
+        return parent;
     }
 
 }

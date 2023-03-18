@@ -22,7 +22,7 @@ public class FileService {
 
     Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 
-    String rootPath;
+    public static String rootPath;
 
     public FileService(Environment env) throws NullPathException {
         //定义根目录
@@ -55,11 +55,17 @@ public class FileService {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String formattedDate = sdf.format(date);
 
+                String parent = file.getParent();
+                if (parent==null){
+                    parent = rootPath;
+                }
+                mFile = new mFile(item.getName(),item.getAbsolutePath(),item.length(),formattedDate,null,parent);
+
                 if (item.isFile()){
-                    mFile = new mFile(item.getName(),item.getAbsolutePath(),item.length(),formattedDate,null,true);
+                    mFile.setIsFile(true);
                     files.add(mFile);
                 }else {
-                    mFile = new mFile(item.getName() + "/", item.getAbsolutePath(), item.length(), formattedDate, null, false);
+                    mFile.setIsFile(false);
                     dirs.add(mFile);
                 }
             }

@@ -12,14 +12,15 @@ public class mFile {
     String changeDate;
     String type;
     Boolean isFile;
+    String parentPath;
 
-    public mFile(String name,String path, Long size, String changeDate, String type, Boolean isFile) {
+    public mFile(String name,String path, Long size, String changeDate, String type,String parentPath) {
         this.name = name;
         this.path = path;
         this.size = size;
         this.changeDate = changeDate;
         this.type = type;
-        this.isFile = isFile;
+        this.parentPath = parentPath;
     }
 
     @Override
@@ -75,11 +76,19 @@ public class mFile {
         this.type = type;
     }
 
-    public Boolean getFile() {
+    public Boolean getIsFile() {
         return isFile;
     }
 
-    public void setFile(Boolean file) {
+    public void setIsFile(Boolean file) {
         isFile = file;
+    }
+
+    public String getParentPath() {
+        return parentPath;
+    }
+
+    public void setParentPath(String parentPath) {
+        this.parentPath = parentPath;
     }
 }
