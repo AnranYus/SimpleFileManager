@@ -10,6 +10,10 @@
     <title>Title</title>
 </head>
 <style>
+    p{
+        max-width: 8em; /* 最大宽度为5个字符 */
+        word-wrap: break-word; /* 在单词内换行 */
+    }
     .panel{
         border-radius: 25px;
         padding: 10px;
@@ -39,14 +43,13 @@
 
     <div class="section no-pad-bot" id="index-banner">
         <div class="container">
-            <div class="col s12 m2 z-depth-5 panel">
-                <table class="highlight ">
+            <div class="col s12 m12 z-depth-5 panel">
+                <table class="highlight col s12 m12">
                     <!--                Title-->
                     <tr>
-                        <td>Name</td>
-                        <td>Size</td>
-                        <td>LastChange</td>
-                        <td>Control</td>
+                        <td class="col s6 m6">Name</td>
+                        <td class="col s2 m2">Size</td>
+                        <td class="col s3 m2">LastChange</td>
                     </tr>
                     <tr>
                         <td>
@@ -58,7 +61,7 @@
                     </tr>
                     <!--        遍历列表-->
                     <tr v-for="(item,index) in files" :key="index">
-                        <td>
+                        <td class="col s6 m6">
                             <div v-if="(item.isFile)">
                                 <p @click="download(item.path,item.name)" class="blue-text text-darken-2" style="cursor: pointer;">
                                     {{item.name}}
@@ -70,13 +73,18 @@
                                 </p>
                             </div>
                         </td>
-                        <td>
+                        <td class="col s2 m2">
                             <div v-if="(item.isFile)">
-                                {{item.size}}
+                                <p v-if="toKb(item.size)<1000">
+                                    {{toKb(item.size)}}KB
+                                </p>
+                                <p v-else>
+                                    {{toMb(item.size)}}MB
+                                </p>
                             </div>
                         </td>
-                        <td>{{item.changeDate}}</td>
-                        <td>
+                        <td class="col s3 m3">{{item.changeDate}}</td>
+                        <td class="col s1 m1">
                             <!--                        控制-->
                             <a href="#" @click="deleteFile(item.path)">删除</a>
                         </td>
@@ -184,8 +192,15 @@
                     this.info = "File is null."
                 }
 
+            },
+            toKb(size){
+                return  parseFloat(size / 1024).toFixed(2);
+            },
+            toMb(size){
+                return parseFloat(size / (1024 * 1024)).toFixed(2);
             }
         }
+
 
     });
 
