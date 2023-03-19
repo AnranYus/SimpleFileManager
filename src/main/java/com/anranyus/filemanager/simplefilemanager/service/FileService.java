@@ -31,6 +31,9 @@ public class FileService {
         if (rootPath==null){
             throw new NullPathException();
         }
+        if (!rootPath.endsWith(File.separator)){
+            rootPath = rootPath+File.separator;
+        }
 
     }
 
@@ -65,7 +68,7 @@ public class FileService {
                 }
                 //求出相对根路径的地址
                 String itemPath = item.getAbsolutePath();
-                String relativePath = itemPath.substring(itemPath.indexOf(rootPath)+rootPath.length()-1);
+                String relativePath = itemPath.substring(itemPath.indexOf(rootPath)+rootPath.length());
 
                 mFile = new mFile(item.getName(),relativePath,item.length(),formattedDate,null,parent);
 
@@ -143,22 +146,18 @@ public class FileService {
      * @return 储存成功与否
      */
 
-    public Boolean saveFile(String path, MultipartFile file){
+    public Boolean saveFile(String path, MultipartFile file) throws IOException {
         if (path.equals("/")){
             path = rootPath;
         }
         path =rootPath + path +File.separator;
         logger.warning(path);
         if (!file.isEmpty()){
-            try {
-                byte[] bytes = file.getBytes();
-                String savePath = path+file.getOriginalFilename();
-                Files.write(Path.of(savePath),bytes);
-                logger.warning("File save in "+savePath);
-                return true;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            byte[] bytes = file.getBytes();
+            String savePath = path+file.getOriginalFilename();
+            Files.write(Path.of(savePath),bytes);
+            logger.warning("File save in "+savePath);
+            return true;
 
         }else {
             return false;
