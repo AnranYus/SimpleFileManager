@@ -3,6 +3,7 @@ package com.anranyus.filemanager.simplefilemanager.service;
 import com.anranyus.filemanager.simplefilemanager.exception.NullPathException;
 import com.anranyus.filemanager.simplefilemanager.model.mFile;
 import com.anranyus.filemanager.simplefilemanager.utils.FileOrder;
+import graphql.util.Pair;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,9 +38,12 @@ public class FileService {
 
     public ArrayList<mFile> traverseFile(String path){
         if (path.equals("/")||path.equals("")){
+            //若路径为空则当访问根目录
             if (rootPath!=null){
                 path = rootPath;
             }
+        }else {
+            path = rootPath+path;
         }
         ArrayList<mFile> files = new ArrayList<>();
         ArrayList<mFile> dirs = new ArrayList<>();
@@ -59,7 +63,11 @@ public class FileService {
                 if (parent==null){
                     parent = rootPath;
                 }
-                mFile = new mFile(item.getName(),item.getAbsolutePath(),item.length(),formattedDate,null,parent);
+                //求出相对根路径的地址
+                String itemPath = item.getAbsolutePath();
+                String relativePath = itemPath.substring(itemPath.indexOf(rootPath)+rootPath.length()-1);
+
+                mFile = new mFile(item.getName(),relativePath,item.length(),formattedDate,null,parent);
 
                 if (item.isFile()){
                     mFile.setIsFile(true);
@@ -81,33 +89,45 @@ public class FileService {
      * @param type 排序类型
      * @param order 排序方式
      * @param path 请求路径
-     * @return 文件列表
+     * @return Pair(父路径,当前路径的文件列表)
      */
-    public ArrayList<mFile> getFiles(String type,String order,String path){
+    public Pair<String,ArrayList<mFile>> getFiles(String type,String order,String path){
         ArrayList<mFile> list =  traverseFile(path);
+        Pair<String,ArrayList<mFile>> pair;
+        String parentPath = getParentPath(path);
         if (type!=null&&order!=null) {
             switch (type) {
                 case "S": {
                     if (order.equals("A")) {
-                        return FileOrder.AscendOrderBySize(list);
+                        list = FileOrder.AscendOrderBySize(list);
                     } else {
-                        return FileOrder.DescendOrderBySize(list);
+                        list = FileOrder.DescendOrderBySize(list);
                     }
                 }
                 case "D": {
                     //TODO 按时间排序
                 }
                 default:
-                    return list;
-
+                    pair = new Pair<>(parentPath,list);
+                    return pair;
             }
         }else {
-            return list;
+            return new Pair<>(parentPath,list);
         }
 
     }
 
+    public String getParentPath(String nowPath){
+        String parent =  new File(nowPath).getParent();
+        if (parent==null|| nowPath.equals(FileService.rootPath)){
+            //没有父路径则要求请求根目录
+            parent = "";
+        }
+        return parent;
+    }
+
     public Boolean deleteFile(String path){
+        path = rootPath+path;
         File file = new File(path);
         if (file.exists()){
             return file.delete();
@@ -127,7 +147,8 @@ public class FileService {
         if (path.equals("/")){
             path = rootPath;
         }
-        path+=File.separator;
+        path =rootPath + path +File.separator;
+        logger.warning(path);
         if (!file.isEmpty()){
             try {
                 byte[] bytes = file.getBytes();

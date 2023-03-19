@@ -1,10 +1,13 @@
 package com.anranyus.filemanager.simplefilemanager.controller;
 
+import com.anranyus.filemanager.simplefilemanager.model.mFile;
 import com.anranyus.filemanager.simplefilemanager.service.FileService;
 import com.google.gson.Gson;
+import graphql.util.Pair;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -13,8 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 @Controller
@@ -29,9 +32,14 @@ public class FileController {
 
     @GetMapping("/api/getFiles")
     @ResponseBody
-    public String getFiles(String path,String type,String order){
+    public ResponseEntity<String> getFiles(String path,String type,String order){
         if (path!=null) {
-            return gson.toJson(fileService.getFiles(type, order, path));
+            Pair<String, ArrayList<mFile>> pair = fileService.getFiles(type, order, path);
+            String data = gson.toJson(pair.second);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Parent-Path",pair.first);
+            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(data);
         }else {
             return null;
         }
@@ -58,16 +66,6 @@ public class FileController {
     @ResponseBody
     public Boolean upload(String path, MultipartFile file){
         return fileService.saveFile(path,file);
-    }
-
-    @GetMapping("/api/parent")
-    @ResponseBody
-    public String getParentPath(String nowPath){
-        String parent =  new File(nowPath).getParent();
-        if (parent==null|| nowPath.equals(FileService.rootPath)){
-            parent = FileService.rootPath;
-        }
-        return parent;
     }
 
 }

@@ -111,20 +111,19 @@
         },
         methods: {
             fetchList(path) {
-                console.log(path)
                 axios.get('/api/getFiles', {
                     params: {
                         path: path
                     }
                 })
                     .then(res => {
+                        this.parentPath = res.headers['parent-path'];
                         this.nowPath = path;
                         this.files = res.data;
                     })
                     .catch(error => {
                         console.log(error);
                     })
-                this.getParentPath(path)
 
             },
             download(path,filename){
@@ -139,18 +138,6 @@
                     link.href = URL.createObjectURL(blob);
                     link.download = filename;
                     link.click();
-                })
-            },
-            getParentPath(nowPath){
-                axios('/api/parent',{
-                    params:{
-                        nowPath:nowPath
-                    }
-                }).then( res => {
-                    if (res){
-                        console.log(res)
-                        this.parentPath = res.data
-                    }
                 })
             },
             deleteFile(path){
