@@ -64,8 +64,12 @@ public class FileController {
 
     @PostMapping("/api/upload")
     @ResponseBody
-    public Boolean upload(String path, MultipartFile file){
-        return fileService.saveFile(path,file);
+    public String upload(String path, MultipartFile file){
+        try {
+            return fileService.saveFile(path,file).toString();
+        } catch (IOException e) {
+            return e.getMessage();
+        }
     }
 
 }

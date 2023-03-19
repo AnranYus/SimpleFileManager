@@ -172,11 +172,12 @@
                             'Content-Type': 'multipart/form-data'
                         }
                     }).then(res => {
-                        if (res){
+                        if (res.data===true){
                             this.info = "OK!"
                             this.fetchList(this.nowPath)
                         }else {
                             this.info = "ERROR!"
+                            console.log(res.data)
                         }
                     }).catch(error => {
                         console.error(error);
