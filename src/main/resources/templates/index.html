@@ -26,6 +26,7 @@
             <a href="#!" class="brand-logo"><i class="material-icons" style="padding-left: 10px">cloud</i></a>
             <ul class="right">
                 <li ><a href="#"><i class="material-icons" @click="showDialog=!showDialog">add</i></a></li>
+                <li ><a href="#"><i class="material-icons" @click="deleteArray(files)">delete</i></a></li>
             </ul>
         </div>
     </nav>
@@ -47,11 +48,13 @@
                 <table class="highlight col s12 m12">
                     <!--                Title-->
                     <tr>
+                        <td colspan="col s1 m1"></td>
                         <td class="col s6 m6">Name</td>
                         <td class="col s2 m2">Size</td>
                         <td class="col s3 m2">LastChange</td>
                     </tr>
                     <tr>
+                        <td></td>
                         <td>
                             <a href="#" @click="fetchList(parentPath)" class="blue-text text-darken-2">
                                 <!--回退上一级-->
@@ -61,6 +64,14 @@
                     </tr>
                     <!--        遍历列表-->
                     <tr v-for="(item,index) in files" :key="index">
+                        <td>
+                            <form action="#">
+                                <p>
+                                    <input type="checkbox" class="filled-in" :id="item.name" :value="index" v-model="selectedItem" />
+                                    <label :for="item.name"></label>
+                                </p>
+                            </form>
+                        </td>
                         <td class="col s6 m6">
                             <div v-if="(item.isFile)">
                                 <p @click="download(item.path,item.name)" class="blue-text text-darken-2" style="cursor: pointer;">
@@ -84,10 +95,6 @@
                             </div>
                         </td>
                         <td class="col s3 m3">{{item.changeDate}}</td>
-                        <td class="col s1 m1">
-                            <!--                        控制-->
-                            <a href="#" @click="deleteFile(item.path)">删除</a>
-                        </td>
                     </tr>
                 </table>
 
@@ -111,6 +118,7 @@
             showDialog:false,//对话框
             selectedFile:null,//选择的文件
             info:"",//上传状态
+            selectedItem:[]
         },
         mounted:function (){
             this.fetchList("")
@@ -198,6 +206,42 @@
             },
             toMb(size){
                 return parseFloat(size / (1024 * 1024)).toFixed(2);
+            },
+            deleteArray(files){
+
+                let data = [];
+                this.selectedItem.forEach(function (item) {
+                    data.push(files[item])
+                })
+                if (data.length<1){
+                    Materialize.toast('You not selected items', 4000)
+                    return;
+                }
+                let json = JSON.stringify(data)
+                let arr = JSON.parse(json)
+
+                axios.post('/api/deleteFiles', {
+                    list: arr,
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(function (res) {
+                        if (res.data.status==="OK"){
+                            Materialize.toast('Delete completed!', 4000)
+                            this.selectedItem = []
+                        }else{
+                            Materialize.toast('Delete failed!Check log in console', 4000)
+                            console.log(res.data.info)
+                        }
+                        this.fetchList(this.nowPath)
+
+                    }.bind(this))
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
             }
         }
 

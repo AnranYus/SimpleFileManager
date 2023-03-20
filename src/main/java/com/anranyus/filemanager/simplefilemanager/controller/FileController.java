@@ -1,5 +1,6 @@
 package com.anranyus.filemanager.simplefilemanager.controller;
 
+import com.anranyus.filemanager.simplefilemanager.Callback;
 import com.anranyus.filemanager.simplefilemanager.model.mFile;
 import com.anranyus.filemanager.simplefilemanager.service.FileService;
 import com.google.gson.Gson;
@@ -11,13 +12,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Controller
@@ -71,5 +72,50 @@ public class FileController {
             return e.getMessage();
         }
     }
+
+    /**
+     *
+     * @param list 其结构为{"list":[mFile1,mFile2]}
+     * @return 若存在删除失败的情况 则返回false
+     */
+    @PostMapping("/api/deleteFiles")
+    @ResponseBody
+    public String deleteFiles(@RequestBody String list){
+
+        Data data = gson.fromJson(list,Data.class);
+        ArrayList<String> result = new ArrayList<>();
+        if (data != null){
+             result =  fileService.deleteFiles(data.list);
+        }else {
+            logger.log(Level.SEVERE,"Null request");
+        }
+
+        //存在错误则返回错误的条目
+        if (result.size()>0){
+            return gson.toJson(new Callback(HttpStatus.BAD_REQUEST,gson.toJson(result)));
+        }
+
+        return gson.toJson(new Callback(HttpStatus.OK,"Delete completed"));
+
+    }
+
+    //需要临时创建一个类来解析json中的list对象内的数据，这是应该最方便的实现
+    private class Data {
+
+        public Data(List<mFile> list) {
+            this.list = list;
+        }
+
+        private List<mFile> list;
+
+        public List<mFile> getList() {
+            return list;
+        }
+
+        public void setList(List<mFile> list) {
+            this.list = list;
+        }
+    }
+
 
 }

@@ -15,6 +15,9 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -22,7 +25,6 @@ import java.util.logging.Logger;
 public class FileService {
 
     Logger logger = Logger.getLogger(this.getClass().getSimpleName());
-
     public static String rootPath;
 
     public FileService(Environment env) throws NullPathException {
@@ -34,6 +36,8 @@ public class FileService {
         if (!rootPath.endsWith(File.separator)){
             rootPath = rootPath+File.separator;
         }
+
+        logger.log(Level.INFO,"Rootpath: "+rootPath);
 
     }
 
@@ -133,9 +137,37 @@ public class FileService {
         path = rootPath+path;
         File file = new File(path);
         if (file.exists()){
-            return file.delete();
+            return delete(file);
         }else {
             return false;
+        }
+    }
+
+    public Boolean delete(File file) {
+        if (file.isDirectory()) {
+            boolean result = true;
+            // 遍历文件夹中的所有文件和子文件夹
+            for (File subFile : Objects.requireNonNull(file.listFiles())) {
+                // 如果是文件，则直接删除
+                if (subFile.isFile()) {
+                    if (!subFile.delete()){
+                        //有文件删除失败则返回false
+                        String info = "Delete file "+subFile.getPath()+" fail!";
+                        logger.log(Level.SEVERE,info);
+                        result = false;
+                    }
+                }
+                // 如果是文件夹，则递归调用删除函数
+                else {
+                    delete(subFile);
+                }
+            }
+
+            // 删除空文件夹
+            file.delete();
+            return result;
+        }else {
+            return file.delete();
         }
     }
 
@@ -164,5 +196,28 @@ public class FileService {
         }
     }
 
+    /**
+     *
+     * @param files 删除的文件列表
+     * @return 存在错误的条目
+     */
+    public ArrayList<String> deleteFiles(List<mFile> files){
+//        boolean result = true;
+        ArrayList<String> infoList = new ArrayList<>();
+        for (mFile file : files) {
+            String info;
+            if (!deleteFile(file.getPath())) {
+                info = "Delete file: "+file.getPath()+" fail!";
+                logger.log(Level.SEVERE,info);
+                infoList.add(info);
+            }else {
+                info = "Deleted file: "+file.getPath();
+                logger.log(Level.WARNING,info);
+            }
+
+        }
+
+        return infoList;
+    }
 
 }
