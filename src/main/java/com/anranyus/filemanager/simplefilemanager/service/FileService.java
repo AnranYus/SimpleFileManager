@@ -1,10 +1,11 @@
 package com.anranyus.filemanager.simplefilemanager.service;
 
-import com.anranyus.filemanager.simplefilemanager.exception.NullPathException;
 import com.anranyus.filemanager.simplefilemanager.model.mFile;
 import com.anranyus.filemanager.simplefilemanager.utils.FileOrder;
 import graphql.util.Pair;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,27 +27,22 @@ public class FileService {
 
     Logger logger = Logger.getLogger(this.getClass().getSimpleName());
     public static String rootPath;
-
-    public FileService(Environment env) throws NullPathException {
-        //定义根目录
+    public FileService(Environment env) {
         rootPath = env.getProperty("rootpath");
-        if (rootPath==null){
-            throw new NullPathException();
+        if (rootPath!=null) {
+            if (!rootPath.endsWith(File.separator)) {
+                rootPath = rootPath + File.separator;
+            }
         }
-        if (!rootPath.endsWith(File.separator)){
-            rootPath = rootPath+File.separator;
-        }
-
-        logger.log(Level.INFO,"Rootpath: "+rootPath);
-
     }
 
     //遍历目录,以map形式返回文件和文件夹列表
 
     public ArrayList<mFile> traverseFile(String path){
+        logger.warning(rootPath);
         if (path.equals("/")||path.equals("")){
             //若路径为空则当访问根目录
-            if (rootPath!=null){
+            if (rootPath !=null){
                 path = rootPath;
             }
         }else {
@@ -126,7 +122,7 @@ public class FileService {
 
     public String getParentPath(String nowPath){
         String parent =  new File(nowPath).getParent();
-        if (parent==null|| nowPath.equals(FileService.rootPath)){
+        if (parent==null|| nowPath.equals(rootPath)){
             //没有父路径则要求请求根目录
             parent = "";
         }
@@ -202,7 +198,6 @@ public class FileService {
      * @return 存在错误的条目
      */
     public ArrayList<String> deleteFiles(List<mFile> files){
-//        boolean result = true;
         ArrayList<String> infoList = new ArrayList<>();
         for (mFile file : files) {
             String info;
@@ -218,6 +213,12 @@ public class FileService {
         }
 
         return infoList;
+    }
+
+    public Resource getResource(String path){
+        path = rootPath + path;
+        return new FileSystemResource(path);
+
     }
 
 }

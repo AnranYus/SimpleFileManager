@@ -5,7 +5,6 @@ import com.anranyus.filemanager.simplefilemanager.model.mFile;
 import com.anranyus.filemanager.simplefilemanager.service.FileService;
 import com.google.gson.Gson;
 import graphql.util.Pair;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -48,13 +47,12 @@ public class FileController {
 
     @GetMapping("/api/download")
     public ResponseEntity<Resource> download(String path) throws IOException {
-        Resource resource = new FileSystemResource(path);
+        Resource resource = fileService.getResource(path);
         return ResponseEntity.ok()
                 .contentLength(resource.contentLength())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
-
     }
 
     @GetMapping("/api/delete")
