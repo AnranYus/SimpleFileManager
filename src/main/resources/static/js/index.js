@@ -21,6 +21,7 @@ const app = new Vue({
             })
                 .then(res => {
                     this.parentPath = res.headers['parent-path'];
+                    console.log(res)
                     this.nowPath = path;
                     this.files = res.data;
                 })
