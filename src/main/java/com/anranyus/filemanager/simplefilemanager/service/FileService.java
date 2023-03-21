@@ -39,7 +39,6 @@ public class FileService {
     //遍历目录,以map形式返回文件和文件夹列表
 
     public ArrayList<mFile> traverseFile(String path){
-        logger.warning(rootPath);
         if (path.equals("/")||path.equals("")){
             //若路径为空则当访问根目录
             if (rootPath !=null){
@@ -179,7 +178,6 @@ public class FileService {
             path = rootPath;
         }
         path =rootPath + path +File.separator;
-        logger.warning(path);
         if (!file.isEmpty()){
             byte[] bytes = file.getBytes();
             String savePath = path+file.getOriginalFilename();

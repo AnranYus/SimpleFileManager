@@ -132,6 +132,18 @@ const app = new Vue({
                     console.log(error);
                 });
 
+        },
+        downloadArray(files) {
+
+            if (this.selectedItem.length < 1) {
+                Materialize.toast('You not selected items', 4000)
+                return;
+            }
+            let context = this;
+
+            this.selectedItem.forEach(function (item) {
+                context.download(files[item].path,files[item].name)
+            })
         }
     }
 
