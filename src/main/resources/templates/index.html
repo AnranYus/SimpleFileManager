@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>SimpleFileManager</title>
 </head>
 <style>
     p{
@@ -23,7 +23,6 @@
 <div id="app">
     <nav>
         <div class="nav-wrapper">
-            <a href="#!" class="brand-logo"><i class="material-icons" style="padding-left: 10px">cloud</i></a>
             <ul class="right">
                 <li ><a><i class="material-icons" @click="fetchList(nowPath)">refresh</i></a></li>
                 <li ><a><i class="material-icons" @click="showDialog=!showDialog">add</i></a></li>
@@ -39,8 +38,8 @@
             <p id="info">{{info}}</p>
         </div>
         <div class="modal-footer">
-            <a href="#!" class="modal-action waves-effect  btn-flat" @click="uploadFile()">UPLOAD</a>
-            <a href="#!" class="modal-action waves-effect  btn-flat" @click="showDialog=!showDialog">CANCEL</a>
+            <div class="modal-action waves-effect  btn-flat" @click="uploadFile()">UPLOAD</div>
+            <div class="modal-action waves-effect  btn-flat" @click="showDialog=!showDialog">CANCEL</div>
         </div>
     </div>
 
@@ -58,10 +57,10 @@
                     <tr>
                         <td></td>
                         <td>
-                            <a href="#" @click="fetchList(parentPath)" class="blue-text text-darken-2">
+                            <div @click="fetchList(parentPath)" class="blue-text text-darken-2">
                                 <!--回退上一级-->
-                                ../
-                            </a>
+                                <div style="cursor: pointer;">../</div>
+                            </div>
                         </td>
                     </tr>
                     <!--        遍历列表-->
