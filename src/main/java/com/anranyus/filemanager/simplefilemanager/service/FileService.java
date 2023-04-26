@@ -28,24 +28,25 @@ public class FileService {
     Logger logger = Logger.getLogger(this.getClass().getSimpleName());
     public static String rootPath;
     public FileService(Environment env) {
-        rootPath = env.getProperty("rootpath");
-        if (rootPath!=null) {
-            if (!rootPath.endsWith(File.separator)) {
-                rootPath = rootPath + File.separator;
-            }
+        rootPath = env.getProperty("root-path");
+        String input = env.getProperty("rootpath");
+        if (input!=null){
+            rootPath = input;
         }
+        rootPath = rootPath.replace("\\", "\\\\");
+        logger.warning(rootPath);
     }
 
     //遍历目录,以map形式返回文件和文件夹列表
 
     public ArrayList<mFile> traverseFile(String path){
-        if (path.equals("/")||path.equals("")){
+        if (path.equals("/")||path.equals("")||path.equals("./")){
             //若路径为空则当访问根目录
             if (rootPath !=null){
                 path = rootPath;
             }
         }else {
-            path = rootPath+path;
+            path = rootPath + path;
         }
         ArrayList<mFile> files = new ArrayList<>();
         ArrayList<mFile> dirs = new ArrayList<>();
@@ -98,21 +99,14 @@ public class FileService {
         Pair<String,ArrayList<mFile>> pair;
         String parentPath = getParentPath(path);
         if (type!=null&&order!=null) {
-            switch (type) {
-                case "S": {
-                    if (order.equals("A")) {
-                        list = FileOrder.AscendOrderBySize(list);
-                    } else {
-                        list = FileOrder.DescendOrderBySize(list);
-                    }
-                }
-                case "D": {
-                    //TODO 按时间排序
-                }
-                default:
-                    pair = new Pair<>(parentPath,list);
-                    return pair;
+            if (order.equals("A")) {
+                list = FileOrder.AscendOrderBySize(list);
+            } else {
+                list = FileOrder.DescendOrderBySize(list);
             }
+
+            pair = new Pair<>(parentPath, list);
+            return pair;
         }else {
             return new Pair<>(parentPath,list);
         }
